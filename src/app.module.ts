@@ -1,0 +1,19 @@
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { validateEnv } from "./config/validate-env";
+import { MongoModule } from "./infrastructure/database/mongo.module";
+import { HealthModule } from "./modules/health/health.module";
+import { HomeModule } from "./modules/home/home.module";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateEnv,
+    }),
+    MongoModule,
+    HealthModule,
+    HomeModule,
+  ],
+})
+export class AppModule {}
