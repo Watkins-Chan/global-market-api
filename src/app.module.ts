@@ -5,6 +5,7 @@ import { MongoModule } from "./infrastructure/database/mongo.module";
 import { HealthModule } from "./modules/health/health.module";
 import { HomeModule } from "./modules/home/home.module";
 import { StocksModule } from "./modules/stocks/stocks.module";
+import { CryptoModule } from "./modules/crypto/crypto.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StocksModule } from "./modules/stocks/stocks.module";
     HealthModule,
     HomeModule,
     StocksModule,
+    CryptoModule,
   ],
 })
 export class AppModule {}
