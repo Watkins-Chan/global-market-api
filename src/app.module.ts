@@ -7,6 +7,7 @@ import { HomeModule } from "./modules/home/home.module";
 import { StocksModule } from "./modules/stocks/stocks.module";
 import { CryptoModule } from "./modules/crypto/crypto.module";
 import { CommoditiesModule } from "./modules/commodities/commodities.module";
+import { VietnamGoldModule } from "./modules/vietnam-gold/vietnam-gold.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CommoditiesModule } from "./modules/commodities/commodities.module";
     StocksModule,
     CryptoModule,
     CommoditiesModule,
+    VietnamGoldModule,
   ],
 })
 export class AppModule {}
