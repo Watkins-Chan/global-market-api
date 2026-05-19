@@ -6,5 +6,6 @@ import { VietnamGoldService } from "./vietnam-gold.service";
 @Module({
   controllers: [VietnamGoldController],
   providers: [VietnamGoldService, VietnamGoldRepository],
+  exports: [VietnamGoldService],
 })
 export class VietnamGoldModule {}
