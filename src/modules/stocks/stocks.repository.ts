@@ -15,6 +15,7 @@ type StockDoc = {
   symbol: string;
   name: string;
   slug?: string;
+  logo?: string;
   sector?: string;
   industry?: string;
   country?: string;
@@ -63,6 +64,7 @@ export class StocksRepository {
             symbol: 1,
             name: 1,
             slug: 1,
+            logo: 1,
             sector: 1,
             industry: 1,
             country: 1,
@@ -87,6 +89,7 @@ export class StocksRepository {
           symbol: String(row.symbol ?? ""),
           name: String(row.name ?? ""),
           slug: typeof row.slug === "string" ? row.slug : undefined,
+          logo: typeof row.logo === "string" ? row.logo : undefined,
           sector: typeof row.sector === "string" ? row.sector : undefined,
           industry: typeof row.industry === "string" ? row.industry : undefined,
           country: typeof row.country === "string" ? row.country : undefined,
@@ -104,7 +107,7 @@ export class StocksRepository {
     const ids = snapshots.map((x) => x.stock_id);
     if (ids.length === 0) return [];
     const docs = await this.mongo.find<StockDoc>("stocks", { stock_id: { $in: ids } }, {
-      projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 },
+      projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, logo: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 },
     });
     const byId = new Map(docs.map((x) => [x.stock_id, x]));
     return snapshots.map((x) => ({ ...x, stock: byId.get(x.stock_id) }));
@@ -119,7 +122,7 @@ export class StocksRepository {
     if (!item) return null;
     const doc = await this.mongo.collection<StockDoc>("stocks").findOne(
       { stock_id: item.stock_id },
-      { projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 } },
+      { projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, logo: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 } },
     );
     return { ...item, stock: doc ?? undefined };
   }
@@ -146,6 +149,7 @@ export class StocksRepository {
             symbol: 1,
             name: 1,
             slug: 1,
+            logo: 1,
             sector: 1,
             industry: 1,
             country: 1,
@@ -170,6 +174,7 @@ export class StocksRepository {
           symbol: String(row.symbol ?? ""),
           name: String(row.name ?? ""),
           slug: typeof row.slug === "string" ? row.slug : undefined,
+          logo: typeof row.logo === "string" ? row.logo : undefined,
           sector: typeof row.sector === "string" ? row.sector : undefined,
           industry: typeof row.industry === "string" ? row.industry : undefined,
           country: typeof row.country === "string" ? row.country : undefined,
@@ -187,7 +192,7 @@ export class StocksRepository {
     const ids = snapshots.map((s) => s.stock_id);
     if (ids.length === 0) return [];
     const docs = await this.mongo.find<StockDoc>("stocks", { stock_id: { $in: ids } }, {
-      projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 },
+      projection: { stock_id: 1, symbol: 1, name: 1, slug: 1, logo: 1, sector: 1, industry: 1, country: 1, country_code: 1, currency: 1, native_currency: 1 },
     });
     const byId = new Map(docs.map((d) => [d.stock_id, d]));
     return snapshots.map((snap) => ({ ...snap, stock: byId.get(snap.stock_id) }));
@@ -234,6 +239,7 @@ export class StocksRepository {
             symbol: 1,
             name: 1,
             slug: 1,
+            logo: 1,
             sector: 1,
             industry: 1,
             country: 1,
@@ -276,6 +282,7 @@ export class StocksRepository {
         symbol: String(row.symbol ?? ""),
         name: String(row.name ?? ""),
         slug: typeof row.slug === "string" ? row.slug : undefined,
+        logo: typeof row.logo === "string" ? row.logo : undefined,
         sector: typeof row.sector === "string" ? row.sector : undefined,
         industry: typeof row.industry === "string" ? row.industry : undefined,
         country: typeof row.country === "string" ? row.country : undefined,

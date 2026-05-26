@@ -3,6 +3,7 @@ type Env = {
   API_PREFIX: string;
   MONGO_URI: string;
   MONGO_DB_NAME: string;
+  TWELVEDATA_API_KEY?: string;
 };
 
 export function validateEnv(input: Record<string, unknown>): Env {
@@ -23,10 +24,13 @@ export function validateEnv(input: Record<string, unknown>): Env {
 
   const apiPrefix = String(input.API_PREFIX ?? "api/v1").trim() || "api/v1";
 
+  const twelveDataKey = String(input.TWELVEDATA_API_KEY ?? "").trim() || undefined;
+
   return {
     PORT: port,
     API_PREFIX: apiPrefix,
     MONGO_URI: mongoUri,
     MONGO_DB_NAME: mongoDbName,
+    TWELVEDATA_API_KEY: twelveDataKey,
   };
 }

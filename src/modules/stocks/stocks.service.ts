@@ -68,8 +68,23 @@ export class StocksService {
     }
   }
 
+  private withFallbackLogo(logo: string | undefined, symbol: string, name?: string): string {
+    const trimmed = (logo ?? "").trim();
+    if (trimmed) {
+      if (/^(https?:|data:)/i.test(trimmed) || trimmed.startsWith("//") || trimmed.startsWith("/")) {
+        return trimmed;
+      }
+      const logoid = trimmed.replace(/^\/+/, "");
+      return `https://s3-symbol-logo.tradingview.com/${logoid}--big.svg`;
+    }
+    const textRaw = (symbol || name || "?").trim();
+    const text = textRaw.slice(0, 3).toUpperCase();
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' rx='12' fill='#1f2937'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='20' fill='#f3f4f6'>${text}</text></svg>`;
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  }
+
   private toStockItem(
-    row: { stock_id: string; price: number; change_1d: number; market_cap?: number; volume?: number; stock?: { symbol?: string; name?: string; slug?: string; sector?: string; industry?: string; country?: string; country_code?: string; currency?: string; native_currency?: string } },
+    row: { stock_id: string; price: number; change_1d: number; market_cap?: number; volume?: number; stock?: { symbol?: string; name?: string; slug?: string; logo?: string; sector?: string; industry?: string; country?: string; country_code?: string; currency?: string; native_currency?: string } },
     idx = 0,
   ): StocksPageAssetItem {
     const symbol = row.stock?.symbol ?? row.stock_id;
@@ -81,6 +96,7 @@ export class StocksService {
       symbol,
       name: row.stock?.name ?? symbol,
       slug: row.stock?.slug ?? symbol.toLowerCase(),
+      logo: this.withFallbackLogo(row.stock?.logo, symbol, row.stock?.name),
       sector: row.stock?.sector,
       industry: row.stock?.industry,
       country: row.stock?.country,

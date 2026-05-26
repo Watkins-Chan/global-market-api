@@ -29,6 +29,7 @@ export interface StocksPageAssetItem {
   symbol: string;
   name: string;
   slug: string;
+  logo?: string;
   sector?: string;
   industry?: string;
   country?: string;
