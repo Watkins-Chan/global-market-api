@@ -457,8 +457,8 @@ export class StockDetailService {
     const points: StockDetailChartPoint[] = series.values.map((row) => ({
       datetime: row.datetime,
       label: this.formatLabel(row.datetime, timeframe),
-      price: Number(row.close.toFixed(2)),
-      volume: Math.max(0, Math.round(row.volume)),
+      price: Number(row.close),
+      volume: Math.max(0, Number(row.volume)),
     }));
 
     if (points.length === 0) {
@@ -488,10 +488,10 @@ export class StockDetailService {
       prices,
       volumes,
       points,
-      open: Number(open.toFixed(2)),
-      high: Number((Number.isFinite(high) ? high : Math.max(...prices)).toFixed(2)),
-      low: Number((Number.isFinite(low) ? low : Math.min(...prices)).toFixed(2)),
-      close: Number(close.toFixed(2)),
+      open: Number(open),
+      high: Number.isFinite(high) ? high : Math.max(...prices),
+      low: Number.isFinite(low) ? low : Math.min(...prices),
+      close: Number(close),
       volume: this.formatVolume(totalVolume),
       avgVolume: this.formatVolume(avgVolume),
       generatedAt: new Date().toISOString(),
