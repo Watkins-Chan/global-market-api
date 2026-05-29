@@ -17,6 +17,7 @@ export interface CryptoPageAssetItem {
   ytdChange?: number;
   rank?: number;
   sparkline: number[];
+  logo?: string;
 }
 
 export interface CryptoOverviewItem {

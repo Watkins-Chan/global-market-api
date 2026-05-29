@@ -31,6 +31,7 @@ type CryptoSnapshot = {
   tradingview_scan?: {
     currency?: unknown;
     fundamental_currency_code?: unknown;
+    ticker_view?: unknown;
   };
 };
 
@@ -176,6 +177,7 @@ export class HomeRepository {
         quote_currency: 1,
         "tradingview_scan.currency": 1,
         "tradingview_scan.fundamental_currency_code": 1,
+        "tradingview_scan.ticker_view": 1,
       },
       sort: { market_cap: -1 },
       limit,
@@ -191,7 +193,7 @@ export class HomeRepository {
 
   async getTopCryptoMovers(limit: number, sort: 1 | -1): Promise<Array<CryptoSnapshot & { crypto?: CryptoDoc }>> {
     const snapshots = await this.mongo.find<CryptoSnapshot>("crypto_snapshots", {}, {
-      projection: { crypto_id: 1, price: 1, change_24h: 1, market_cap: 1, volume_24h: 1, quote_currency: 1, "tradingview_scan.currency": 1, "tradingview_scan.fundamental_currency_code": 1 },
+      projection: { crypto_id: 1, price: 1, change_24h: 1, market_cap: 1, volume_24h: 1, quote_currency: 1, "tradingview_scan.currency": 1, "tradingview_scan.fundamental_currency_code": 1, "tradingview_scan.ticker_view": 1 },
       sort: { change_24h: sort },
       limit,
     });
@@ -341,7 +343,7 @@ export class HomeRepository {
   async getCryptoSnapshotById(cryptoId: string): Promise<CryptoSnapshot | null> {
     return this.mongo.collection<CryptoSnapshot>("crypto_snapshots").findOne(
       { crypto_id: cryptoId },
-      { projection: { crypto_id: 1, price: 1, change_24h: 1, market_cap: 1, volume_24h: 1, quote_currency: 1, "tradingview_scan.currency": 1, "tradingview_scan.fundamental_currency_code": 1 } },
+      { projection: { crypto_id: 1, price: 1, change_24h: 1, market_cap: 1, volume_24h: 1, quote_currency: 1, "tradingview_scan.currency": 1, "tradingview_scan.fundamental_currency_code": 1, "tradingview_scan.ticker_view": 1 } },
     );
   }
 

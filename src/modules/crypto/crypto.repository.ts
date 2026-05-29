@@ -21,6 +21,7 @@ type CryptoDoc = {
   symbol: string;
   name: string;
   slug?: string;
+  logo?: string;
   category?: string;
   ecosystem?: string;
   profile_category?: string;
@@ -223,14 +224,14 @@ export class CryptoRepository {
 
   async getTopByMarketCap(limit: number): Promise<Array<CryptoSnapshot & { crypto?: CryptoDoc }>> {
     const snapshots = await this.mongo.find<CryptoSnapshot>("crypto_snapshots", {}, {
-      projection: { crypto_id: 1, price: 1, change_24h: 1, change_7d: 1, change_30d: 1, change_ytd: 1, market_cap: 1, volume_24h: 1, rank: 1, quote_currency: 1 },
+      projection: { crypto_id: 1, price: 1, change_24h: 1, change_7d: 1, change_30d: 1, change_ytd: 1, market_cap: 1, volume_24h: 1, rank: 1, quote_currency: 1, "tradingview_scan.ticker_view": 1 },
       sort: { market_cap: -1 },
       limit,
     });
     const ids = snapshots.map((x) => x.crypto_id);
     if (ids.length === 0) return [];
     const docs = await this.mongo.find<CryptoDoc>("cryptos", { crypto_id: { $in: ids } }, {
-      projection: { crypto_id: 1, symbol: 1, name: 1, slug: 1, category: 1, ecosystem: 1, profile_category: 1, rank: 1 },
+      projection: { crypto_id: 1, symbol: 1, name: 1, slug: 1, logo: 1, category: 1, ecosystem: 1, profile_category: 1, rank: 1 },
     });
     const byId = new Map(docs.map((x) => [x.crypto_id, x]));
     return snapshots.map((x) => ({ ...x, crypto: byId.get(x.crypto_id) }));
@@ -238,14 +239,14 @@ export class CryptoRepository {
 
   async getTopMovers(limit: number, sort: 1 | -1): Promise<Array<CryptoSnapshot & { crypto?: CryptoDoc }>> {
     const snapshots = await this.mongo.find<CryptoSnapshot>("crypto_snapshots", {}, {
-      projection: { crypto_id: 1, price: 1, change_24h: 1, change_7d: 1, change_30d: 1, change_ytd: 1, market_cap: 1, volume_24h: 1, rank: 1, quote_currency: 1 },
+      projection: { crypto_id: 1, price: 1, change_24h: 1, change_7d: 1, change_30d: 1, change_ytd: 1, market_cap: 1, volume_24h: 1, rank: 1, quote_currency: 1, "tradingview_scan.ticker_view": 1 },
       sort: { change_24h: sort },
       limit,
     });
     const ids = snapshots.map((x) => x.crypto_id);
     if (ids.length === 0) return [];
     const docs = await this.mongo.find<CryptoDoc>("cryptos", { crypto_id: { $in: ids } }, {
-      projection: { crypto_id: 1, symbol: 1, name: 1, slug: 1, category: 1, ecosystem: 1, profile_category: 1, rank: 1 },
+      projection: { crypto_id: 1, symbol: 1, name: 1, slug: 1, logo: 1, category: 1, ecosystem: 1, profile_category: 1, rank: 1 },
     });
     const byId = new Map(docs.map((x) => [x.crypto_id, x]));
     return snapshots.map((x) => ({ ...x, crypto: byId.get(x.crypto_id) }));
@@ -320,6 +321,7 @@ export class CryptoRepository {
             symbol: 1,
             name: 1,
             slug: 1,
+            logo: 1,
             category: 1,
             ecosystem: 1,
             profile_category: 1,
@@ -333,6 +335,7 @@ export class CryptoRepository {
             market_cap: "$snapshot.market_cap",
             volume_24h: "$snapshot.volume_24h",
             quote_currency: "$snapshot.quote_currency",
+            tradingview_scan: { ticker_view: "$snapshot.tradingview_scan.ticker_view" },
           },
         },
         { $skip: skip },
@@ -365,11 +368,15 @@ export class CryptoRepository {
       volume_24h: typeof row.volume_24h === "number" ? row.volume_24h : undefined,
       rank: typeof row.rank === "number" ? row.rank : typeof row.snapshot_rank === "number" ? row.snapshot_rank : undefined,
       quote_currency: typeof row.quote_currency === "string" ? row.quote_currency : undefined,
+      tradingview_scan: row.tradingview_scan && typeof row.tradingview_scan === "object"
+        ? { ticker_view: (row.tradingview_scan as { ticker_view?: unknown }).ticker_view }
+        : undefined,
       crypto: {
         crypto_id: String(row.crypto_id ?? ""),
         symbol: String(row.symbol ?? ""),
         name: String(row.name ?? ""),
         slug: typeof row.slug === "string" ? row.slug : undefined,
+        logo: typeof row.logo === "string" ? row.logo : undefined,
         category: typeof row.category === "string" ? row.category : undefined,
         ecosystem: typeof row.ecosystem === "string" ? row.ecosystem : undefined,
         profile_category: typeof row.profile_category === "string" ? row.profile_category : undefined,

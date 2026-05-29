@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { withCryptoLogo, withStockLikeLogo, normalizeAssetLogoUrl } from "../../common/asset-logo.util";
 import { HomeQueryDto } from "./dto/home-query.dto";
 import { HomeSectionQueryDto } from "./dto/home-section-query.dto";
 import { HomeRepository } from "./home.repository";
@@ -77,11 +78,11 @@ export class HomeService {
   }
 
   private withFallbackLogo(logo: string | undefined, symbol: string, name?: string): string {
-    if (logo && logo.trim()) return logo;
-    const textRaw = (symbol || name || "?").trim();
-    const text = textRaw.slice(0, 3).toUpperCase();
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' rx='12' fill='#1f2937'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='20' fill='#f3f4f6'>${text}</text></svg>`;
-    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    return withStockLikeLogo(logo, symbol, name);
+  }
+
+  private normalizeLogo(logo?: string): string | undefined {
+    return normalizeAssetLogoUrl(logo, "big");
   }
 
   private currencyFromUnit(unit?: string): string | null {
@@ -149,6 +150,7 @@ export class HomeService {
     tradingview_scan?: {
       currency?: unknown;
       fundamental_currency_code?: unknown;
+      ticker_view?: unknown;
     };
     crypto?: { symbol?: string; name?: string; slug?: string; logo?: string; currency?: string; quote_currency?: string };
   }, sparkline: number[]): HomeAssetItem {
@@ -170,7 +172,12 @@ export class HomeService {
       market_cap: row.market_cap,
       volume: row.volume_24h,
       sparkline,
-      logo: this.withFallbackLogo(row.crypto?.logo, row.crypto?.symbol ?? row.crypto_id, row.crypto?.name),
+      logo: withCryptoLogo({
+        logo: row.crypto?.logo,
+        tickerView: row.tradingview_scan?.ticker_view,
+        symbol: row.crypto?.symbol ?? row.crypto_id,
+        name: row.crypto?.name,
+      }),
     };
   }
 
@@ -195,7 +202,7 @@ export class HomeService {
       volume: row.volume,
       sparkline,
       group: row.commodity?.group,
-      logo: this.withFallbackLogo(row.commodity?.logo, row.commodity?.symbol ?? row.commodity_id, row.commodity?.name),
+      logo: this.normalizeLogo(row.commodity?.logo),
     };
   }
 
@@ -217,7 +224,7 @@ export class HomeService {
       currency: row.brand?.currency ?? unitCurrency,
       change24h: this.round2(row.change_1d),
       sparkline,
-      logo: this.withFallbackLogo(row.brand?.logo, row.brand?.brand_code ?? row.brand_id, row.brand?.name),
+      logo: this.normalizeLogo(row.brand?.logo),
     };
   }
 
@@ -951,7 +958,7 @@ export class HomeService {
         change24h: this.round2(row.change_1d),
         currency: row.brand?.currency ?? this.currencyFromUnit(row.brand?.unit),
         unit: row.brand?.unit,
-        logo: this.withFallbackLogo(row.brand?.logo, symbol, row.brand?.name),
+        logo: this.normalizeLogo(row.brand?.logo),
         source: row.source,
       };
     });

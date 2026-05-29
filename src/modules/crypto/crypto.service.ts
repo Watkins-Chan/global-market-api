@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { withCryptoLogo } from "../../common/asset-logo.util";
 import { CryptoQueryDto } from "./dto/crypto-query.dto";
 import { CryptoRepository } from "./crypto.repository";
 import {
@@ -35,7 +36,8 @@ export class CryptoService {
       volume_24h?: number;
       rank?: number;
       quote_currency?: string;
-      crypto?: { symbol?: string; name?: string; slug?: string; category?: string; ecosystem?: string; profile_category?: string; rank?: number };
+      tradingview_scan?: Record<string, unknown>;
+      crypto?: { symbol?: string; name?: string; slug?: string; logo?: string; category?: string; ecosystem?: string; profile_category?: string; rank?: number };
     },
   ): CryptoPageAssetItem {
     const symbol = row.crypto?.symbol ?? row.crypto_id;
@@ -72,6 +74,12 @@ export class CryptoService {
       ytdChange: Number((row.change_ytd ?? (change24h * 6.5)).toFixed(2)),
       rank: row.rank ?? row.crypto?.rank,
       sparkline,
+      logo: withCryptoLogo({
+        logo: row.crypto?.logo,
+        tickerView: row.tradingview_scan?.ticker_view,
+        symbol,
+        name: row.crypto?.name,
+      }),
     };
   }
 
