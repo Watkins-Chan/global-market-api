@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { withCryptoLogo, withStockLikeLogo, normalizeAssetLogoUrl } from "../../common/asset-logo.util";
+import { withCommodityLogo } from "../../common/commodity-logo.util";
 import { HomeQueryDto } from "./dto/home-query.dto";
 import { HomeSectionQueryDto } from "./dto/home-section-query.dto";
 import { HomeRepository } from "./home.repository";
@@ -181,6 +182,12 @@ export class HomeService {
     };
   }
 
+  private normalizeCommoditySymbol(symbol?: string): string {
+    const raw = (symbol ?? "").trim();
+    if (!raw.includes(":")) return raw;
+    return raw.split(":")[0]?.trim() ?? raw;
+  }
+
   private toCommodityAsset(row: {
     commodity_id: string;
     price: number;
@@ -189,9 +196,10 @@ export class HomeService {
     commodity?: { symbol?: string; name?: string; slug?: string; group?: string; logo?: string; unit?: string; currency?: string };
   }, sparkline: number[]): HomeAssetItem {
     const unitCurrency = this.currencyFromUnit(row.commodity?.unit);
+    const symbol = this.normalizeCommoditySymbol(row.commodity?.symbol) || row.commodity_id;
     return {
       id: row.commodity_id,
-      symbol: row.commodity?.symbol ?? row.commodity_id,
+      symbol,
       name: row.commodity?.name ?? row.commodity_id,
       slug: row.commodity?.slug ?? row.commodity_id,
       marketType: "commodity",
@@ -202,7 +210,12 @@ export class HomeService {
       volume: row.volume,
       sparkline,
       group: row.commodity?.group,
-      logo: this.normalizeLogo(row.commodity?.logo),
+      logo: withCommodityLogo({
+        logo: row.commodity?.logo,
+        symbol,
+        name: row.commodity?.name,
+        group: row.commodity?.group,
+      }),
     };
   }
 

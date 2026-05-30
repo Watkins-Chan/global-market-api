@@ -3,7 +3,7 @@ type TickerViewLike = {
   "base-currency-logoid"?: unknown;
 };
 
-function initialsSvg(symbol: string, name?: string): string {
+export function initialsSvg(symbol: string, name?: string): string {
   const textRaw = (symbol || name || "?").trim();
   const text = textRaw.slice(0, 3).toUpperCase();
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' rx='12' fill='#1f2937'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='20' fill='#f3f4f6'>${text}</text></svg>`;

@@ -3,6 +3,7 @@ export interface CommodityAssetItem {
   symbol: string;
   name: string;
   slug: string;
+  logo?: string;
   group?: string;
   unit?: string;
   price: number;

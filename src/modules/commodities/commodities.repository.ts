@@ -6,6 +6,7 @@ type CommodityRow = {
   symbol: string;
   name: string;
   slug?: string;
+  logo?: string;
   group?: string;
   unit?: string;
   price: number;
@@ -47,6 +48,7 @@ export class CommoditiesRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
           group: 1,
           unit: 1,
           price: "$snapshot.price",
@@ -97,6 +99,7 @@ export class CommoditiesRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
           group: 1,
           unit: 1,
           price: "$snapshot.price",
@@ -242,6 +245,7 @@ export class CommoditiesRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
           group: 1,
           unit: 1,
           price: "$snapshot.price",

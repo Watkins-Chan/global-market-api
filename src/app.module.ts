@@ -9,6 +9,7 @@ import { StockDetailModule } from "./modules/stock-detail/stock-detail.module";
 import { CryptoModule } from "./modules/crypto/crypto.module";
 import { CryptoDetailModule } from "./modules/crypto-detail/crypto-detail.module";
 import { CommoditiesModule } from "./modules/commodities/commodities.module";
+import { CommodityDetailModule } from "./modules/commodity-detail/commodity-detail.module";
 import { VietnamGoldModule } from "./modules/vietnam-gold/vietnam-gold.module";
 import { MarketBriefModule } from "./modules/market-brief/market-brief.module";
 import { ScreenerModule } from "./modules/screener/screener.module";
@@ -27,6 +28,7 @@ import { ScreenerModule } from "./modules/screener/screener.module";
     CryptoModule,
     CryptoDetailModule,
     CommoditiesModule,
+    CommodityDetailModule,
     VietnamGoldModule,
     MarketBriefModule,
     ScreenerModule,

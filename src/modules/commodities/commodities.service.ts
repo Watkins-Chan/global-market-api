@@ -3,6 +3,7 @@ import { CommoditiesQueryDto } from "./dto/commodities-query.dto";
 import { CommoditiesRepository } from "./commodities.repository";
 import { CommodityAssetItem, CommodityAssetsResponse, CommodityGroupsResponse, CommodityInsightsResponse, CommodityMarketDriversResponse, CommodityOverviewResponse, CommodityTopMoversResponse } from "./commodities.types";
 import { COMMODITY_INSIGHTS_MOCK, COMMODITY_MARKET_DRIVERS_MOCK } from "./commodities.mock";
+import { withCommodityLogo } from "../../common/commodity-logo.util";
 
 @Injectable()
 export class CommoditiesService {
@@ -30,6 +31,7 @@ export class CommoditiesService {
     symbol: string;
     name: string;
     slug?: string;
+    logo?: string;
     group?: string;
     unit?: string;
     price: number;
@@ -47,6 +49,7 @@ export class CommoditiesService {
       symbol: row.symbol,
       name: row.name,
       slug: row.slug ?? row.symbol.toLowerCase(),
+      logo: withCommodityLogo({ logo: row.logo, symbol: row.symbol, name: row.name, group: row.group }),
       group: row.group,
       unit: row.unit,
       price,
