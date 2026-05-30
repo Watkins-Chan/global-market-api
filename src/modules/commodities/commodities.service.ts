@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { CommoditiesQueryDto } from "./dto/commodities-query.dto";
 import { CommoditiesRepository } from "./commodities.repository";
-import { CommodityAssetItem, CommodityAssetsResponse, CommodityGroupsResponse, CommodityOverviewResponse, CommodityTopMoversResponse } from "./commodities.types";
+import { CommodityAssetItem, CommodityAssetsResponse, CommodityGroupsResponse, CommodityInsightsResponse, CommodityMarketDriversResponse, CommodityOverviewResponse, CommodityTopMoversResponse } from "./commodities.types";
+import { COMMODITY_INSIGHTS_MOCK, COMMODITY_MARKET_DRIVERS_MOCK } from "./commodities.mock";
 
 @Injectable()
 export class CommoditiesService {
@@ -116,6 +117,22 @@ export class CommoditiesService {
         leaders: x.leaders.map((row) => this.toItem(row)),
       })),
       generatedAt: new Date().toISOString(),
+    };
+  }
+
+  getMarketDrivers(): CommodityMarketDriversResponse {
+    return {
+      items: COMMODITY_MARKET_DRIVERS_MOCK,
+      generatedAt: new Date().toISOString(),
+      source: "mock",
+    };
+  }
+
+  getInsights(): CommodityInsightsResponse {
+    return {
+      items: COMMODITY_INSIGHTS_MOCK,
+      generatedAt: new Date().toISOString(),
+      source: "mock",
     };
   }
 }

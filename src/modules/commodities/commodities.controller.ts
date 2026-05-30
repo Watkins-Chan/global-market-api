@@ -4,6 +4,8 @@ import { CommoditiesService } from "./commodities.service";
 import {
   CommodityAssetsResponse,
   CommodityGroupsResponse,
+  CommodityInsightsResponse,
+  CommodityMarketDriversResponse,
   CommodityOverviewResponse,
   CommodityTopMoversResponse,
 } from "./commodities.types";
@@ -30,5 +32,15 @@ export class CommoditiesController {
   @Get("groups")
   getGroups(): Promise<CommodityGroupsResponse> {
     return this.commoditiesService.getGroups();
+  }
+
+  @Get("market-drivers")
+  getMarketDrivers(): CommodityMarketDriversResponse {
+    return this.commoditiesService.getMarketDrivers();
+  }
+
+  @Get("insights")
+  getInsights(): CommodityInsightsResponse {
+    return this.commoditiesService.getInsights();
   }
 }

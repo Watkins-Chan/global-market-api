@@ -56,3 +56,33 @@ export interface CommodityGroupsResponse {
   }>;
   generatedAt: string;
 }
+
+export type CommodityDriverSentiment = "bullish" | "bearish";
+
+export interface CommodityMarketDriverItem {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  impact: string;
+  sentiment: CommodityDriverSentiment;
+}
+
+export interface CommodityMarketDriversResponse {
+  items: CommodityMarketDriverItem[];
+  generatedAt: string;
+  source: "mock";
+}
+
+export interface CommodityInsightItem {
+  id: string;
+  category: string;
+  title: string;
+  summary: string;
+}
+
+export interface CommodityInsightsResponse {
+  items: CommodityInsightItem[];
+  generatedAt: string;
+  source: "mock";
+}
