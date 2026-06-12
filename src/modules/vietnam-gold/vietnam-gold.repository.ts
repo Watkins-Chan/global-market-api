@@ -140,6 +140,23 @@ export class VietnamGoldRepository {
     };
   }
 
+  /** Latest global quote (USD/oz) for a commodity slug, e.g. "xagusd-cur" for silver. */
+  async getGlobalCommodityQuote(slug: string): Promise<{ price: number | null; change24h: number | null }> {
+    const doc = await this.mongo.collection("commodities").findOne(
+      { slug },
+      { projection: { commodity_id: 1 } },
+    );
+    if (!doc?.commodity_id) return { price: null, change24h: null };
+    const snap = await this.mongo.collection("commodity_snapshots").findOne(
+      { commodity_id: doc.commodity_id },
+      { sort: { updated_at: -1 }, projection: { price: 1, change_1d: 1 } },
+    );
+    return {
+      price: typeof snap?.price === "number" ? snap.price : null,
+      change24h: typeof snap?.change_1d === "number" ? snap.change_1d : null,
+    };
+  }
+
   async getBrandByCode(brandCode: string, metalType: "gold" | "silver" = "gold"): Promise<VietnamGoldRow | null> {
     const codeRegex = new RegExp(brandCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     const rows = await this.mongo.collection("vietnam_gold_brands").aggregate([

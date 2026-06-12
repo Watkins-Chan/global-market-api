@@ -31,12 +31,12 @@ export class VietnamGoldService {
     return `${this.toMillions(value).toFixed(1)}M VND`;
   }
 
-  private formatMillionsPerTael(value: number): string {
-    return `${this.toMillions(value).toFixed(1)}M VND/tael`;
+  private formatMillionsWithUnit(value: number, unit: string): string {
+    return `${this.toMillions(value).toFixed(1)}M ${unit}`;
   }
 
-  private formatUsdOz(value: number): string {
-    return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)}/oz`;
+  private formatUsdOz(value: number, fractionDigits = 0): string {
+    return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: fractionDigits }).format(value)}/oz`;
   }
 
   private compactSymbol(row: VietnamGoldRow): string {
@@ -46,7 +46,26 @@ export class VietnamGoldService {
     if (combined.includes("sjc")) return "SJC";
     if (combined.includes("doji")) return "DOJI";
     if (combined.includes("pnj")) return "PNJ";
+    if (combined.includes("phú quý") || combined.includes("phu quy") || raw.startsWith("PQS")) return "PQS";
+    // Crawler-generated codes look like "BRAND_LONG_SLUG"; keep only the brand prefix.
+    if (raw.includes("_")) return raw.split("_")[0]?.trim() || raw;
     return raw || row.brand_id;
+  }
+
+  /** Title-case ALL-CAPS crawler names, e.g. "BẠC THỎI PHÚ QUÝ 999 1KILO" -> "Bạc Thỏi Phú Quý 999 1Kilo". */
+  private prettifyName(name: string): string {
+    const trimmed = (name ?? "").trim();
+    if (!trimmed) return trimmed;
+    const letters = trimmed.replace(/[^\p{L}]/gu, "");
+    if (!letters || letters !== letters.toLocaleUpperCase("vi-VN")) return trimmed;
+    const brandAcronyms = new Set(["SJC", "DOJI", "PNJ", "PQS", "BTMC", "AJC", "VBĐQ"]);
+    return trimmed
+      .toLocaleLowerCase("vi-VN")
+      .replace(/\p{L}+/gu, (word) => {
+        const upper = word.toLocaleUpperCase("vi-VN");
+        if (brandAcronyms.has(upper)) return upper;
+        return word.charAt(0).toLocaleUpperCase("vi-VN") + word.slice(1);
+      });
   }
 
   private unitLabel(unit?: string): string {
@@ -63,13 +82,13 @@ export class VietnamGoldService {
     const spread = Number.isFinite(row.spread) ? row.spread : Math.max(0, row.sell_price - buyPrice);
     const premium = row.premium_vs_global ?? null;
     const unit = this.unitLabel(row.unit);
-    const sellFormatted = this.formatMillionsPerTael(row.sell_price);
+    const sellFormatted = this.formatMillionsWithUnit(row.sell_price, unit);
 
     return {
       id: row.brand_id,
       brandCode: row.brand_code,
       symbol: this.compactSymbol(row),
-      name: row.name,
+      name: this.prettifyName(row.name),
       slug: row.slug ?? row.brand_id,
       unit,
       buyPrice,
@@ -116,7 +135,8 @@ export class VietnamGoldService {
     };
   }
 
-  async getOverview(): Promise<VietnamGoldOverviewResponse> {
+  async getOverview(query?: VietnamGoldQueryDto): Promise<VietnamGoldOverviewResponse> {
+    if (query?.metalType === "silver") return this.getSilverOverview();
     const [globalRef, sjcRow] = await Promise.all([
       this.repo.getLatestGlobalReference(),
       this.repo.getBrandByCode("SJC", "gold"),
@@ -160,6 +180,66 @@ export class VietnamGoldService {
         },
       ],
       conversion,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  private async getSilverOverview(): Promise<VietnamGoldOverviewResponse> {
+    const [globalRef, silverQuote, benchmarkRow] = await Promise.all([
+      this.repo.getLatestGlobalReference(),
+      this.repo.getGlobalCommodityQuote("xagusd-cur"),
+      this.repo.getBrandByCode("BẠC MIẾNG", "silver"),
+    ]);
+
+    // USD/VND rate is derived from the gold reference snapshot; silver snapshots don't carry it.
+    const usdVndRate = globalRef.usdVndRate && Number.isFinite(globalRef.usdVndRate)
+      ? globalRef.usdVndRate
+      : DEFAULT_USD_VND;
+    const globalPriceUsdOz = silverQuote.price ?? 0;
+    const globalChange24h = this.round2(silverQuote.change24h ?? 0);
+    const equivalentVndPerLuong = globalPriceUsdOz * usdVndRate * LUONG_PER_OZ;
+    const domesticSell = benchmarkRow?.sell_price ?? 0;
+    const premiumVnd = domesticSell > 0 && equivalentVndPerLuong > 0 ? domesticSell - equivalentVndPerLuong : 0;
+
+    return {
+      items: [
+        {
+          label: "Global Silver",
+          value: globalPriceUsdOz > 0 ? this.formatUsdOz(globalPriceUsdOz, 2) : "N/A",
+          sub: "International benchmark",
+          change: globalChange24h,
+        },
+        {
+          label: "Converted (VND)",
+          value: equivalentVndPerLuong > 0 ? this.formatMillionsVndShort(equivalentVndPerLuong) : "N/A",
+          sub: `Based on ${Math.round(usdVndRate).toLocaleString("en-US")} VND/USD`,
+          change: null,
+        },
+        {
+          label: "Silver Sell Price",
+          value: domesticSell > 0 ? this.formatMillionsVndShort(domesticSell) : "N/A",
+          sub: "Domestic benchmark",
+          change: this.round2(benchmarkRow?.change_1d ?? 0),
+        },
+        {
+          label: "Silver Premium",
+          value: premiumVnd !== 0
+            ? `${premiumVnd > 0 ? "+" : ""}${this.formatMillionsVndShort(premiumVnd)}`
+            : "N/A",
+          sub: premiumVnd >= 0 ? "Above global equivalent" : "Below global equivalent",
+          change: null,
+          highlight: true,
+        },
+      ],
+      conversion: {
+        globalPriceUsdOz,
+        globalChange24h,
+        usdVndRate,
+        equivalentVndPerLuong,
+        sjcSellVndPerLuong: domesticSell,
+        premiumVnd,
+        luongPerOz: LUONG_PER_OZ,
+      },
       generatedAt: new Date().toISOString(),
     };
   }

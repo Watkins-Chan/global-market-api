@@ -32,6 +32,7 @@ export interface VietnamGoldOverviewResponse {
   items: VietnamGoldOverviewMetric[];
   conversion: {
     globalPriceUsdOz: number;
+    globalChange24h?: number;
     usdVndRate: number;
     equivalentVndPerLuong: number;
     sjcSellVndPerLuong: number;

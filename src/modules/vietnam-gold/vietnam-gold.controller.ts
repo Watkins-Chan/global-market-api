@@ -13,8 +13,8 @@ export class VietnamGoldController {
   constructor(private readonly vietnamGoldService: VietnamGoldService) {}
 
   @Get("overview")
-  getOverview(): Promise<VietnamGoldOverviewResponse> {
-    return this.vietnamGoldService.getOverview();
+  getOverview(@Query() query: VietnamGoldQueryDto): Promise<VietnamGoldOverviewResponse> {
+    return this.vietnamGoldService.getOverview(query);
   }
 
   @Get("featured")
