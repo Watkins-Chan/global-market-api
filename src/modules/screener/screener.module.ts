@@ -6,5 +6,6 @@ import { ScreenerService } from "./screener.service";
 @Module({
   controllers: [ScreenerController],
   providers: [ScreenerRepository, ScreenerService],
+  exports: [ScreenerRepository],
 })
 export class ScreenerModule {}

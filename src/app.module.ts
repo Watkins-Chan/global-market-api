@@ -14,6 +14,7 @@ import { VietnamGoldModule } from "./modules/vietnam-gold/vietnam-gold.module";
 import { MarketBriefModule } from "./modules/market-brief/market-brief.module";
 import { ScreenerModule } from "./modules/screener/screener.module";
 import { NewsModule } from "./modules/news/news.module";
+import { CompareModule } from "./modules/compare/compare.module";
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NewsModule } from "./modules/news/news.module";
     MarketBriefModule,
     ScreenerModule,
     NewsModule,
+    CompareModule,
   ],
 })
 export class AppModule {}
