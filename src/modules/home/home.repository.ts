@@ -311,18 +311,24 @@ export class HomeRepository {
   }
 
   async getLatestNews(limit: number): Promise<NewsDoc[]> {
-    return this.mongo.find<NewsDoc & Document>("market_news", {}, {
-      projection: {
-        title: 1,
-        summary: 1,
-        market: 1,
-        published_at: 1,
-        source: 1,
-        url: 1,
+    // Only real crawled articles have a clickable URL; this filters out seeded
+    // placeholders (e.g. the ingestion-validation doc) and any malformed entries.
+    return this.mongo.find<NewsDoc & Document>(
+      "market_news",
+      { url: { $type: "string", $ne: "" }, title: { $type: "string", $ne: "" } },
+      {
+        projection: {
+          title: 1,
+          summary: 1,
+          market: 1,
+          published_at: 1,
+          source: 1,
+          url: 1,
+        },
+        sort: { published_at: -1 },
+        limit,
       },
-      sort: { published_at: -1 },
-      limit,
-    });
+    );
   }
 
   async getStockBySymbol(symbol: string): Promise<StockDoc | null> {
