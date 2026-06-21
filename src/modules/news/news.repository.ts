@@ -40,13 +40,19 @@ export class NewsRepository {
       url: { $type: "string", $ne: "" },
     };
     filter.market = query.market && query.market !== "all" ? query.market : { $in: MARKETS };
+
+    const and: Filter<NewsRecord & Document>[] = [];
     if (query.tag) {
-      filter.tags = { $regex: `^${this.escapeRegex(query.tag)}$`, $options: "i" };
+      // A chip can be a display tag (Gold) or a raw ticker (XAU); match either field.
+      const exact = { $regex: `^${this.escapeRegex(query.tag)}$`, $options: "i" };
+      and.push({ $or: [{ tags: exact }, { symbols: exact }] });
     }
     if (query.search) {
       const rx = { $regex: this.escapeRegex(query.search), $options: "i" };
-      filter.$or = [{ title: rx }, { summary: rx }, { tags: rx }];
+      and.push({ $or: [{ title: rx }, { summary: rx }, { tags: rx }, { symbols: rx }] });
     }
+    if (and.length > 0) filter.$and = and;
+
     return filter;
   }
 
