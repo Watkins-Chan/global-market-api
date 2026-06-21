@@ -13,6 +13,7 @@ import { CommodityDetailModule } from "./modules/commodity-detail/commodity-deta
 import { VietnamGoldModule } from "./modules/vietnam-gold/vietnam-gold.module";
 import { MarketBriefModule } from "./modules/market-brief/market-brief.module";
 import { ScreenerModule } from "./modules/screener/screener.module";
+import { NewsModule } from "./modules/news/news.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ScreenerModule } from "./modules/screener/screener.module";
     VietnamGoldModule,
     MarketBriefModule,
     ScreenerModule,
+    NewsModule,
   ],
 })
 export class AppModule {}
