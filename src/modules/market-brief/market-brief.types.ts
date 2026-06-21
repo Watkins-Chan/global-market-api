@@ -8,6 +8,7 @@ export interface MarketBriefAssetItem {
   marketType: "stock" | "crypto" | "commodity" | "gold";
   priceFormatted: string;
   change24h: number;
+  logo?: string;
 }
 
 export interface MarketBriefSnapshotCard {
@@ -31,6 +32,21 @@ export interface MarketBriefCommodityCard {
   slug: string;
   priceFormatted: string;
   change24h: number;
+  logo?: string;
+}
+
+export interface MarketBriefNewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  category: string;
+  market: "stock" | "crypto" | "commodity";
+  source: string;
+  url: string;
+  time: string;
+  publishedAt: string;
+  imageUrl?: string;
+  tags: string[];
 }
 
 export interface MarketBriefVietnamGoldBrand {
@@ -68,4 +84,5 @@ export interface MarketBriefResponse {
     crypto: MarketBriefAssetItem[];
     commodities: MarketBriefAssetItem[];
   };
+  latestNews: MarketBriefNewsItem[];
 }

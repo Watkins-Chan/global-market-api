@@ -1,10 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { HomeService } from "../home/home.service";
 import { HomeAssetItem } from "../home/home.types";
+import { NewsService } from "../news/news.service";
 import { VietnamGoldService } from "../vietnam-gold/vietnam-gold.service";
 import {
   MarketBriefAssetItem,
   MarketBriefCommodityCard,
+  MarketBriefNewsItem,
   MarketBriefResponse,
   MarketBriefSnapshotCard,
   MarketBriefSnapshotKey,
@@ -15,6 +17,7 @@ export class MarketBriefService {
   constructor(
     private readonly homeService: HomeService,
     private readonly vietnamGoldService: VietnamGoldService,
+    private readonly newsService: NewsService,
   ) {}
 
   private fmtPct(value: number): string {
@@ -39,7 +42,29 @@ export class MarketBriefService {
       marketType: item.marketType,
       priceFormatted: item.priceFormatted,
       change24h: item.change24h,
+      logo: item.logo,
     };
+  }
+
+  private async getLatestNews(limit: number): Promise<MarketBriefNewsItem[]> {
+    try {
+      const { items } = await this.newsService.getNews({ market: "all", limit, page: 1 });
+      return items.map((n) => ({
+        id: n.id,
+        title: n.title,
+        summary: n.summary,
+        category: n.category,
+        market: n.market,
+        source: n.source,
+        url: n.url || n.sourceUrl,
+        time: n.time,
+        publishedAt: n.publishedAt,
+        imageUrl: n.imageUrl,
+        tags: n.tags,
+      }));
+    } catch {
+      return [];
+    }
   }
 
   private topMoversFromGainersLosers(gainers: HomeAssetItem[], losers: HomeAssetItem[], limit: number): MarketBriefAssetItem[] {
@@ -128,6 +153,7 @@ export class MarketBriefService {
       commodityMovers,
       vnOverview,
       vnAll,
+      latestNews,
     ] = await Promise.all([
       this.homeService.getExploreMarkets(),
       this.homeService.getTrendingAssets({ limit: briefLimit }),
@@ -137,6 +163,7 @@ export class MarketBriefService {
       this.homeService.getMovers({ market: "commodity", limit: moverLimit }),
       this.vietnamGoldService.getOverview(),
       this.vietnamGoldService.getAll({ page: 1, limit: brandLimit, metalType: "gold", sortBy: "sell", sortDir: "desc" }),
+      this.getLatestNews(10),
     ]);
 
     const cardByKey = new Map(explore.cards.map((c) => [c.key, c]));
@@ -189,6 +216,7 @@ export class MarketBriefService {
         slug: x.slug,
         priceFormatted: x.priceFormatted,
         change24h: x.change24h,
+        logo: x.logo,
       }));
 
     const stockAvg =
@@ -233,6 +261,7 @@ export class MarketBriefService {
           marketType: "commodity" as const,
           priceFormatted: c.priceFormatted,
           change24h: c.change24h,
+          logo: c.logo,
         })),
         cards: commodityCards,
       },
@@ -254,6 +283,7 @@ export class MarketBriefService {
         crypto: this.topMoversFromGainersLosers(cryptoMovers.gainers, cryptoMovers.losers, moverLimit),
         commodities: this.topMoversFromGainersLosers(commodityMovers.gainers, commodityMovers.losers, moverLimit),
       },
+      latestNews,
     };
   }
 }
