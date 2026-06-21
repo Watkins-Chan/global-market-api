@@ -7,6 +7,7 @@ export interface ScreenerItem {
   slug: string;
   marketType: ScreenerMarketType;
   marketLabel: string;
+  logo?: string;
   price: number;
   priceFormatted: string;
   change24h: number;

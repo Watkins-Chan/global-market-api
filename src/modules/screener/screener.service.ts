@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+import { withCryptoLogo, withStockLikeLogo } from "../../common/asset-logo.util";
+import { withCommodityLogo } from "../../common/commodity-logo.util";
 import { ScreenerQueryDto } from "./dto/screener-query.dto";
 import { ScreenerRepository, ScreenerRawRow } from "./screener.repository";
 import { ScreenerItem, ScreenerMarketType, ScreenerResponse } from "./screener.types";
@@ -43,6 +45,20 @@ export class ScreenerService {
     }
   }
 
+  private resolveLogo(row: ScreenerRawRow): string | undefined {
+    switch (row.marketType) {
+      case "stock":
+        return withStockLikeLogo(row.logo, row.symbol, row.name);
+      case "crypto":
+        return withCryptoLogo({ logo: row.logo, symbol: row.symbol, name: row.name });
+      case "commodity":
+        return withCommodityLogo({ logo: row.logo, symbol: row.symbol, name: row.name, group: row.group });
+      default:
+        // Vietnam gold brands have no logo; the UI renders a gold-themed initials avatar.
+        return undefined;
+    }
+  }
+
   private toItem(row: ScreenerRawRow): ScreenerItem {
     return {
       id: row.id,
@@ -51,6 +67,7 @@ export class ScreenerService {
       slug: row.slug,
       marketType: row.marketType,
       marketLabel: MARKET_LABELS[row.marketType],
+      logo: this.resolveLogo(row),
       price: row.price,
       priceFormatted: this.formatPrice(row),
       change24h: this.round2(row.change24h),

@@ -16,6 +16,8 @@ export type ScreenerRawRow = {
   unit?: string;
   marketCap?: number;
   rank?: number;
+  logo?: string;
+  group?: string;
 };
 
 @Injectable()
@@ -56,6 +58,7 @@ export class ScreenerRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
           price: "$snapshot.price",
           change24h: "$snapshot.change_1d",
           marketCap: "$snapshot.market_cap",
@@ -79,6 +82,7 @@ export class ScreenerRepository {
         ytdChange: Number((change * 8).toFixed(2)),
         currency: typeof row.currency === "string" ? row.currency : "USD",
         marketCap: typeof row.marketCap === "number" ? row.marketCap : undefined,
+        logo: typeof row.logo === "string" ? row.logo : undefined,
       };
     });
   }
@@ -118,6 +122,7 @@ export class ScreenerRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
           price: "$snapshot.price",
           change24h: "$snapshot.change_24h",
           weekChange: "$snapshot.change_7d",
@@ -144,6 +149,7 @@ export class ScreenerRepository {
         ytdChange: Number((row.ytdChange ?? change24h * 6.5).toFixed(2)),
         currency: typeof row.currency === "string" ? row.currency : "USD",
         rank: typeof row.rank === "number" ? row.rank : undefined,
+        logo: typeof row.logo === "string" ? row.logo : undefined,
       };
     });
   }
@@ -187,6 +193,8 @@ export class ScreenerRepository {
           symbol: 1,
           name: 1,
           slug: 1,
+          logo: 1,
+          group: 1,
           price: "$snapshot.price",
           change24h: "$snapshot.change_1d",
           weekChange: "$snapshot.change_1w",
@@ -210,6 +218,8 @@ export class ScreenerRepository {
       ytdChange: Number(row.ytdChange ?? 0),
       currency: "USD",
       rank: index + 1,
+      logo: typeof row.logo === "string" ? row.logo : undefined,
+      group: typeof row.group === "string" ? row.group : undefined,
     }));
   }
 
@@ -256,6 +266,7 @@ export class ScreenerRepository {
           weekChange: "$snapshot.change_1w",
           monthChange: "$snapshot.change_1m",
           ytdChange: "$snapshot.change_ytd",
+          sparkline: "$snapshot.sparkline_7d",
         },
       },
     );
@@ -270,6 +281,14 @@ export class ScreenerRepository {
       else if (combined.includes("doji")) symbol = "DOJI";
       else if (combined.includes("pnj")) symbol = "PNJ";
 
+      // Gold snapshots carry no daily-change field, so derive movement from the
+      // 7-day sparkline (last point is the current price).
+      const spark = Array.isArray(row.sparkline) ? (row.sparkline as number[]).filter((n) => typeof n === "number" && n > 0) : [];
+      const pct = (to?: number, from?: number): number =>
+        typeof to === "number" && typeof from === "number" && from > 0 ? Number((((to - from) / from) * 100).toFixed(2)) : 0;
+      const day = Number(row.change24h ?? 0) || (spark.length >= 2 ? pct(spark[spark.length - 1], spark[spark.length - 2]) : 0);
+      const week = Number(row.weekChange ?? 0) || (spark.length >= 2 ? pct(spark[spark.length - 1], spark[0]) : 0);
+
       return {
         id: String(row.id ?? ""),
         symbol,
@@ -277,8 +296,8 @@ export class ScreenerRepository {
         slug: String(row.slug ?? row.id ?? "").toLowerCase(),
         marketType: "gold" as const,
         price: Number(row.price ?? 0),
-        change24h: Number(row.change24h ?? 0),
-        weekChange: Number(row.weekChange ?? 0),
+        change24h: day,
+        weekChange: week,
         monthChange: Number(row.monthChange ?? 0),
         ytdChange: Number(row.ytdChange ?? 0),
         unit: "VND/tael",
